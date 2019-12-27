@@ -30,13 +30,14 @@ func main() {
 	p4 := fmt.Sprintf("This year end date, default is %s", v4)
 
 	var (
-		app       = kingpin.New("LYBNTY Report for Classic", "A command-line app to create an LYBNTY for a Salsa Classic instance")
-		login     = app.Flag("login", "YAML file with API token").String()
-		org       = app.Flag("org", "Organization name (for output file)").String()
-		lastStart = app.Flag("last-year-start", p1).Default(v1).String()
-		lastEnd   = app.Flag("last-year-end", p2).Default(v2).String()
-		thisStart = app.Flag("this-year-start", p3).Default(v3).String()
-		thisEnd   = app.Flag("this-year-end", p4).Default(v4).String()
+		app        = kingpin.New("LYBNTY Report for Classic", "A command-line app to create an LYBNTY for a Salsa Classic instance")
+		login      = app.Flag("login", "YAML file with API token").String()
+		org        = app.Flag("org", "Organization name (for output file)").String()
+		lastStart  = app.Flag("last-year-start", p1).Default(v1).String()
+		lastEnd    = app.Flag("last-year-end", p2).Default(v2).String()
+		thisStart  = app.Flag("this-year-start", p3).Default(v3).String()
+		thisEnd    = app.Flag("this-year-end", p4).Default(v4).String()
+		apiVerbose = app.Flag("api-verbose", "Makes the app noisy by showing API calls and results").Bool()
 	)
 	app.Parse(os.Args[1:])
 
@@ -44,6 +45,9 @@ func main() {
 	a, err := godig.YAMLAuth(*login)
 	if err != nil {
 		log.Fatalf("Authentication error: %+v\n", err)
+	}
+	if apiVerbose != nil {
+		a.Verbose = *apiVerbose
 	}
 	rt, err := lybnty.NewRuntime(a, org, lastStart, lastEnd, thisStart, thisEnd)
 	if err != nil {
