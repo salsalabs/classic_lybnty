@@ -8,7 +8,7 @@ import (
 )
 
 //Write accepts Data records, and writes them to a CSV file.
-func (rt Runtime) Write(c chan Data) (err error) {
+func (rt *Runtime) Write(c chan Data) (err error) {
 	f, err := os.Create(rt.Filename)
 	if err != nil {
 		return err

@@ -10,17 +10,19 @@ import (
 
 //Runtime contains the data necessary to run the application.
 type Runtime struct {
-	LastStart time.Time
-	LastEnd   time.Time
-	ThisStart time.Time
-	ThisEnd   time.Time
-	Org       string
-	API       *godig.API
-	Filename  string
+	LastStart     time.Time
+	LastEnd       time.Time
+	ThisStart     time.Time
+	ThisEnd       time.Time
+	Org           string
+	API           *godig.API
+	Filename      string
+	DonorThisYear map[string]bool
+	DataCache     []Data
 }
 
 //NewRuntime build the runtime environment for this app.
-func NewRuntime(a *godig.API, org *string, lastStart *string, lastEnd *string, thisStart *string, thisEnd *string) (r Runtime, err error) {
+func NewRuntime(a *godig.API, org *string, lastStart *string, lastEnd *string, thisStart *string, thisEnd *string) (rt *Runtime, err error) {
 	b := []*string{
 		org,
 		lastStart,
@@ -29,6 +31,7 @@ func NewRuntime(a *godig.API, org *string, lastStart *string, lastEnd *string, t
 		thisEnd,
 	}
 	e := false
+	r := Runtime{}
 	for i, v := range b {
 		if v == nil || len(*v) == 0 {
 			switch i {
@@ -87,13 +90,15 @@ func NewRuntime(a *godig.API, org *string, lastStart *string, lastEnd *string, t
 			}
 		}
 	}
+	rt = &r
 	if e {
 		err := fmt.Errorf("%s", "Unable to continue due to parameter errors")
-		return r, err
+		return rt, err
 	}
 	r.API = a
 	r.Org = *org
 	y := r.ThisStart.Format("2006")
 	r.Filename = fmt.Sprintf("LYBNTY %v %v.csv", r.Org, y)
-	return r, nil
+	r.DonorThisYear = make(map[string]bool)
+	return rt, nil
 }

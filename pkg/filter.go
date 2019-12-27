@@ -4,20 +4,17 @@ import (
 	"log"
 )
 
-//Filter accepts maps of strings, converts them to useful data, then
-//pushes qualified records downstream.
-func (rt Runtime) Filter(in chan map[string]string, out chan Data) {
+//Filter iterates through the data cache.  Records that do not have a supporter
+//key in the donors this year.
+func (rt *Runtime) Filter(cached chan bool, out chan Data) {
 	log.Println("Filter: begin")
-	for m := range in {
-		d := NewDonation(m)
-		if d.TransactionDate.After(rt.ThisStart) && d.TransactionDate.Before(rt.ThisEnd) {
-			log.Printf("Filter: %v is between this start %v and this end %v\n", d.TransactionDate, rt.ThisStart, rt.ThisEnd)
-		} else {
-			s := NewSupporter(m)
-			data := Data{
-				Supporter: s,
-				Donation:  d,
-			}
+	<-cached
+	log.Println("Filter: start filtering to the output")
+	log.Printf("Filter: %d cached items\n", len(rt.DataCache))
+	log.Printf("Filter: %d donors this year\n", len(rt.DonorThisYear))
+	for _, data := range rt.DataCache {
+		_, ok := rt.DonorThisYear[data.SupporterKey]
+		if !ok {
 			out <- data
 		}
 	}

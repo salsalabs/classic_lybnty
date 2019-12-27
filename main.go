@@ -30,7 +30,7 @@ func main() {
 	p4 := fmt.Sprintf("This year end date, default is %s", v4)
 
 	var (
-		app        = kingpin.New("LYBNTY Report for Classic", "A command-line app to create an LYBNTY for a Salsa Classic instance")
+		app        = kingpin.New("classic_lybnty", "A command-line app to create an LYBNTY for a Salsa Classic instance")
 		login      = app.Flag("login", "YAML file with API token").String()
 		org        = app.Flag("org", "Organization name (for output file)").String()
 		lastStart  = app.Flag("last-year-start", p1).Default(v1).String()
@@ -57,12 +57,13 @@ func main() {
 
 	c1 := make(chan map[string]string)
 	c2 := make(chan lybnty.Data)
+	cached := make(chan bool)
 	var wg sync.WaitGroup
 
 	log.Printf("main: Done")
 
 	//Start the writer.
-	go (func(rt lybnty.Runtime, c2 chan lybnty.Data, wg *sync.WaitGroup) {
+	go (func(rt *lybnty.Runtime, c2 chan lybnty.Data, wg *sync.WaitGroup) {
 		wg.Add(1)
 		defer wg.Done()
 		err := rt.Write(c2)
@@ -72,16 +73,24 @@ func main() {
 	})(rt, c2, &wg)
 	log.Printf("main: writer started")
 
-	//Start the filter.
-	go (func(rt lybnty.Runtime, c1 chan map[string]string, c2 chan lybnty.Data, wg *sync.WaitGroup) {
+	//Start the filter. Note that Filter waits for cached before processing.
+	go (func(rt *lybnty.Runtime, cached chan bool, c2 chan lybnty.Data, wg *sync.WaitGroup) {
 		wg.Add(1)
 		defer wg.Done()
-		rt.Filter(c1, c2)
-	})(rt, c1, c2, &wg)
+		rt.Filter(cached, c2)
+	})(rt, cached, c2, &wg)
 	log.Printf("main: filter started")
 
+	//Start the cache.  Note that cache sends to cached when done.
+	go (func(rt *lybnty.Runtime, c1 chan map[string]string, cached chan bool, wg *sync.WaitGroup) {
+		wg.Add(1)
+		defer wg.Done()
+		rt.Cache(c1, cached)
+	})(rt, c1, cached, &wg)
+	log.Printf("main: cache started")
+
 	//Start the push.
-	go (func(rt lybnty.Runtime, c1 chan map[string]string, wg *sync.WaitGroup) {
+	go (func(rt *lybnty.Runtime, c1 chan map[string]string, wg *sync.WaitGroup) {
 		wg.Add(1)
 		defer wg.Done()
 		err := rt.Push(c1)
