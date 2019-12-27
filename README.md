@@ -62,6 +62,7 @@ Flags:
   --api-verbose                 Makes the app noisy by showing API calls and results
 ```
 Where:
+
 | Argument | Description |
 | --- | --- |
 |LOGIN|A yaml file with Classic API credentials. For example, `bobcat.yaml`.|
