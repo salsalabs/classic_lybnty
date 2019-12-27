@@ -16,6 +16,7 @@ type Runtime struct {
 	ThisEnd   time.Time
 	Org       string
 	API       *godig.API
+	Filename  string
 }
 
 //NewRuntime build the runtime environment for this app.
@@ -93,5 +94,7 @@ func NewRuntime(a *godig.API, org *string, lastStart *string, lastEnd *string, t
 	}
 	r.API = a
 	r.Org = *org
+	y := r.ThisStart.Format("2006")
+	r.Filename = fmt.Sprintf("LYBNTY %v %v.csv", r.Org, y)
 	return r, nil
 }

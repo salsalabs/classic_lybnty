@@ -49,4 +49,47 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Printf("Runtime: %+v\n", rt)
+
+	c1 := make(chan map[string]string)
+	c2 := make(chan lybnty.Data)
+	var wg sync.WaitGroup
+
+	log.Printf("main: Done")
+
+	//Start the writer.
+	go (function(rt RunTime, c2 chan lybnty.Data, wg &sync.WaitGroup) {
+		wg.Add(1)
+		defer wg.Done()
+		err := rt.Write(c2)
+		if err != nil {
+			log.Fatal(err)
+		}
+	})(rt, c2, &wg)
+	log.Printf("main: writer started")
+
+	//Start the filter.
+	go (function(rt RunTime, c1 chan map[string]string, c2 chan lybnty.Data, wg &sync.WaitGroup) {
+		wg.Add(1)
+		defer wg.Done()
+		err := rt.Filter(c1, c2)
+		if err != nil {
+			log.Fatal(err)
+		}
+	})(rt, c1, c2, &wg)
+	log.Printf("main: filter started")
+	
+	//Start the push.
+	go (function(rt RunTime, c1 chan map[string]string, wg &sync.WaitGroup) {
+		wg.Add(1)
+		defer wg.Done()
+		err := rt.Push(c1)
+		if err != nil {
+			log.Fatal(err)
+		}
+	})(rt, c1, &wg)
+	log.Printf("main: push started")
+
+	//Wait for things to terminate.
+	wg.Wait()
+	log.Printf("main: Done")
 }
