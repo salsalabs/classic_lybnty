@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 	"time"
 
 	lybnty "github.com/salsalabs/classic_lybnty/pkg"
@@ -57,7 +58,7 @@ func main() {
 	log.Printf("main: Done")
 
 	//Start the writer.
-	go (function(rt RunTime, c2 chan lybnty.Data, wg &sync.WaitGroup) {
+	go (func(rt lybnty.Runtime, c2 chan lybnty.Data, wg *sync.WaitGroup) {
 		wg.Add(1)
 		defer wg.Done()
 		err := rt.Write(c2)
@@ -68,18 +69,15 @@ func main() {
 	log.Printf("main: writer started")
 
 	//Start the filter.
-	go (function(rt RunTime, c1 chan map[string]string, c2 chan lybnty.Data, wg &sync.WaitGroup) {
+	go (func(rt lybnty.Runtime, c1 chan map[string]string, c2 chan lybnty.Data, wg *sync.WaitGroup) {
 		wg.Add(1)
 		defer wg.Done()
-		err := rt.Filter(c1, c2)
-		if err != nil {
-			log.Fatal(err)
-		}
+		rt.Filter(c1, c2)
 	})(rt, c1, c2, &wg)
 	log.Printf("main: filter started")
-	
+
 	//Start the push.
-	go (function(rt RunTime, c1 chan map[string]string, wg &sync.WaitGroup) {
+	go (func(rt lybnty.Runtime, c1 chan map[string]string, wg *sync.WaitGroup) {
 		wg.Add(1)
 		defer wg.Done()
 		err := rt.Push(c1)
