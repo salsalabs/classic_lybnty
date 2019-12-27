@@ -30,7 +30,6 @@ func NewRuntime(a *godig.API, org *string, lastStart *string, lastEnd *string, t
 	}
 	e := false
 	for i, v := range b {
-		fmt.Printf("checking parameter %v\n", *v)
 		if v == nil || len(*v) == 0 {
 			switch i {
 			case 0:
