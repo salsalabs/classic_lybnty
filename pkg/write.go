@@ -18,6 +18,7 @@ func (rt Runtime) Write(c chan Data) (err error) {
 	a := strings.Split(s, "\n")
 	//Headers
 	w.Write(a)
+	w.Flush()
 
 	for d := range c {
 		var r []string
@@ -59,13 +60,13 @@ func (rt Runtime) Write(c chan Data) (err error) {
 			case "TransactionType":
 				x = d.TransactionType
 			case "amount":
-				x = fmt.Sprintf("%.2e", d.Amount)
+				x = fmt.Sprintf("%.2f", d.Amount)
 			}
 			r = append(r, x)
 		}
 		w.Write(r)
+		w.Flush()
 	}
-	w.Flush()
 	err = f.Close()
 	return err
 }
