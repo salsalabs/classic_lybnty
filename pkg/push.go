@@ -2,6 +2,7 @@ package lybnty
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	godig "github.com/salsalabs/godig/pkg"
@@ -21,9 +22,9 @@ func (rt Runtime) Push(d chan map[string]string) (err error) {
 		lastStart,
 		lastEnd,
 	}
-
+	c := strings.Join(conditions, "&condition=")
+	log.Printf("Push: criteria is %v\n", c)
 	for count == 500 {
-		c := strings.Join(conditions, "&condition=")
 		fmt.Printf("Conditions are '%v'\n", c)
 		m, err := t.ManyMap(offset, count, c)
 		if err != nil {
@@ -33,6 +34,8 @@ func (rt Runtime) Push(d chan map[string]string) (err error) {
 			d <- r
 		}
 		count = len(m)
+		log.Printf("Push: read %d from offset %d\n", count, offset)
+		offset += int32(count)
 	}
 	return err
 }
