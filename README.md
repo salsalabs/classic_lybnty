@@ -64,7 +64,7 @@ Flags:
 Where:
 
 | Argument | Description |
-| --- | --- |
+| ---- | ---- |
 |LOGIN|A yaml file with Classic API credentials. For example, `bobcat.yaml`.|
 |ORG|An organization name.  Be sure to quote the name if it has spaces.  For example, `"Bob the Bobcat Refuge"`|
 
