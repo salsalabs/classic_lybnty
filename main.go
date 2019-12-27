@@ -88,6 +88,14 @@ func main() {
 	log.Printf("main: push started")
 
 	//Wait for things to terminate.
+	d, err := time.ParseDuration("10s")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("main: napping")
+	time.Sleep(d)
+	log.Printf("main: nap done")
+	log.Printf("main: waiting...")
 	wg.Wait()
 	log.Printf("main: Done")
 }
